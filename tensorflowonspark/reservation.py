@@ -151,14 +151,12 @@ class Server(MessageSocket):
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_sock.bind(('', 0))
     server_sock.listen(10)
-    print(server_sock.__dict__)
 
     # hostname may not be resolvable but IP address probably will be
     print("get host info")
     host = util.get_ip_address()
     port = server_sock.getsockname()[1]
     addr = (host, port)
-    print(addr.__dict__)
     logging.info("listening for reservations at {0}".format(addr))
 
     def _listen(self, sock):

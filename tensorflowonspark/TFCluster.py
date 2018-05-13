@@ -223,7 +223,7 @@ def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mo
     A TFCluster object representing the started cluster.
   """
   logging.info("Reserving TFSparkNodes {0}".format("w/ TensorBoard" if tensorboard else ""))
-  if num_ps < num_executors:
+  if num_ps > num_executors:
     raise Exception("Number of executors is less than the number of parameter servers specified, ideally number of executors should be 1 more than the number of parameter server, \
         if you are increasing number of executors, make sure that you also change 'spark.executor.instances' accordingly")
 
