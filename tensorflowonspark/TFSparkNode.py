@@ -197,28 +197,28 @@ def run(fn, tf_args, cluster_meta, tensorboard, log_dir, queues, background):
     # start TensorBoard if requested
     tb_pid = 0
     tb_port = 0
-    if tensorboard and job_name == 'worker' and task_index == 0:
-      tb_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      tb_sock.bind(('', 0))
-      tb_port = tb_sock.getsockname()[1]
-      tb_sock.close()
-      logdir = log_dir if log_dir else "tensorboard_%d" % executor_id
-
-      # search for tensorboard in python/bin, PATH, and PYTHONPATH
-      pypath = sys.executable
-      pydir = os.path.dirname(pypath)
-      search_path = os.pathsep.join([pydir, os.environ['PATH'], os.environ['PYTHONPATH']])
-      tb_path = util.find_in_path(search_path, 'tensorboard')                             # executable in PATH
-      if not tb_path:
-        tb_path = util.find_in_path(search_path, 'tensorboard/main.py')                   # TF 1.3+
-      if not tb_path:
-        tb_path = util.find_in_path(search_path, 'tensorflow/tensorboard/__main__.py')    # TF 1.2-
-      if not tb_path:
-        raise Exception("Unable to find 'tensorboard' in: {}".format(search_path))
-
-      # launch tensorboard
-      tb_proc = subprocess.Popen([pypath, tb_path, "--logdir=%s" % logdir, "--port=%d" % tb_port], env=os.environ)
-      tb_pid = tb_proc.pid
+    # if tensorboard and job_name == 'worker' and task_index == 0:
+    #   tb_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #   tb_sock.bind(('', 0))
+    #   tb_port = tb_sock.getsockname()[1]
+    #   tb_sock.close()
+    #   logdir = log_dir if log_dir else "tensorboard_%d" % executor_id
+    #
+    #   # search for tensorboard in python/bin, PATH, and PYTHONPATH
+    #   pypath = sys.executable
+    #   pydir = os.path.dirname(pypath)
+    #   search_path = os.pathsep.join([pydir, os.environ['PATH'], os.environ['PYTHONPATH']])
+    #   tb_path = util.find_in_path(search_path, 'tensorboard')                             # executable in PATH
+    #   if not tb_path:
+    #     tb_path = util.find_in_path(search_path, 'tensorboard/main.py')                   # TF 1.3+
+    #   if not tb_path:
+    #     tb_path = util.find_in_path(search_path, 'tensorflow/tensorboard/__main__.py')    # TF 1.2-
+    #   if not tb_path:
+    #     raise Exception("Unable to find 'tensorboard' in: {}".format(search_path))
+    #
+    #   # launch tensorboard
+    #   tb_proc = subprocess.Popen([pypath, tb_path, "--logdir=%s" % logdir, "--port=%d" % tb_port], env=os.environ)
+    #   tb_pid = tb_proc.pid
 
     # check server to see if this task is being retried (i.e. already reserved)
     client = reservation.Client(cluster_meta['server_addr'])

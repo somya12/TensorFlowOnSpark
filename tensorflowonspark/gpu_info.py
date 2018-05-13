@@ -29,12 +29,18 @@ def _get_gpu():
     libcudart = ct.windll.LoadLibrary("libcudart.dll")
   else:
     raise NotImplementedError("Cannot identify system.")
+  print("inside function get GPU")
+  print("system" + system)
+
 
   device_count = ct.c_int()
+  print("number of GPU devices" + str(device_count))
   libcudart.cudaGetDeviceCount(ct.byref(device_count))
   gpu = 0
   for i in range(device_count.value):
+    print("the ith gpu" + str(i))
     if (0 == libcudart.cudaSetDevice(i) and 0 == libcudart.cudaFree(0)):
+      print("assigned GPU" + str(i))
       gpu = i
       break
   return gpu
@@ -52,6 +58,7 @@ def get_gpus(num_gpu=1):
     Comma-delimited string of GPU ids, or raises an Exception if the requested number of GPUs could not be found.
   """
   # get list of gpus (index, uuid)
+  print("get GPUs in gpu_info is called")
   list_gpus = subprocess.check_output(["nvidia-smi", "--list-gpus"]).decode()
   logging.debug("all GPUs:\n{0}".format(list_gpus))
 
@@ -70,13 +77,20 @@ def get_gpus(num_gpu=1):
   retries = 0
   while len(free_gpus) < num_gpu and retries < MAX_RETRIES:
     smi_output = subprocess.check_output(["nvidia-smi", "--format=csv,noheader,nounits", "--query-compute-apps=gpu_uuid"]).decode()
+    print("smi output")
+    print(smi_output)
     logging.debug("busy GPUs:\n{0}".format(smi_output))
     busy_uuids = [x for x in smi_output.split('\n') if len(x) > 0]
     for uuid, index in gpu_list:
       if uuid not in busy_uuids:
+        print("uuid")
+        print(uuid)
         free_gpus.append(index)
 
     if len(free_gpus) < num_gpu:
+      print("num_gpu" + str(num_gpu) + "free_gpus\n")
+      print(free_gpus)
+
       # keep trying indefinitely
       logging.warn("Unable to find available GPUs: requested={0}, available={1}".format(num_gpu, len(free_gpus)))
       retries += 1
@@ -110,7 +124,8 @@ def _get_free_gpu(max_gpu_utilization=40, min_free_memory=0.5, num_gpu=1):
     # Get the gpu information
     gpu_info = subprocess.check_output(["nvidia-smi", "--format=csv,noheader,nounits", "--query-gpu=index,memory.total,memory.free,memory.used,utilization.gpu"]).decode()
     gpu_info = gpu_info.split('\n')
-
+    print("gpu_info\n")
+    print(gpu_info)
     gpu_info_array = []
 
     # Check each gpu
@@ -148,6 +163,8 @@ def _get_free_gpu(max_gpu_utilization=40, min_free_memory=0.5, num_gpu=1):
   free_memory = 1.0
   # Return the least utilized GPUs if it's utilized less than max_gpu_utilization and amount of free memory is at least min_free_memory
   # Otherwise, run in cpu only mode
+  print("avg_array")
+  print(avg_array)
   for current_gpu in avg_array:
     if current_gpu[0] < max_gpu_utilization and (1 - current_gpu[1]) > min_free_memory:
       if gpus_found == 0:
