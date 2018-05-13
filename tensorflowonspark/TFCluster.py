@@ -190,14 +190,15 @@ class TFCluster(object):
       jobs = st.getActiveJobsIds()
       if len(jobs) == 0:
         break
+    logging.info("Cluster shutdown gracefully")
 
-  def tensorboard_url(self):
-    """Utility function to get the Tensorboard URL"""
-    tb_url = None
-    for node in self.cluster_info:
-      if node['tb_port'] != 0:
-        tb_url = "http://{0}:{1}".format(node['host'], node['tb_port'])
-    return tb_url
+  # def tensorboard_url(self):
+  #   """Utility function to get the Tensorboard URL"""
+  #   tb_url = None
+  #   for node in self.cluster_info:
+  #     if node['tb_port'] != 0:
+  #       tb_url = "http://{0}:{1}".format(node['host'], node['tb_port'])
+  #   return tb_url
 
 
 def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mode=InputMode.TENSORFLOW,
@@ -222,7 +223,9 @@ def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mo
     A TFCluster object representing the started cluster.
   """
   logging.info("Reserving TFSparkNodes {0}".format("w/ TensorBoard" if tensorboard else ""))
-  assert num_ps < num_executors
+  if num_ps < num_executors:
+    raise Exception("Number of executors is less than the number of parameter servers specified, ideally number of executors should be 1 more than the number of parameter server, \
+        if you are increasing number of executors, make sure that you also change 'spark.executor.instances' accordingly")
 
   if driver_ps_nodes and input_mode != InputMode.TENSORFLOW:
     raise Exception('running PS nodes on driver locally is only supported in InputMode.TENSORFLOW')
@@ -230,10 +233,14 @@ def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mo
   # build a cluster_spec template using worker_nums
   cluster_template = {}
   cluster_template['ps'] = range(num_ps)
+  ##TRY
+  # try specifying the master and chief node
   if master_node is None:
     cluster_template['worker'] = range(num_ps, num_executors)
   else:
     cluster_template[master_node] = range(num_ps, num_ps + 1)
+    print("cluster template in TF cluster")
+    print(cluster_template)
     if num_executors > num_ps + 1:
       cluster_template['worker'] = range(num_ps + 1, num_executors)
   logging.info("cluster_template: {}".format(cluster_template))
@@ -250,6 +257,7 @@ def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mo
   # start a server to listen for reservations and broadcast cluster_spec
   server = reservation.Server(num_executors)
   server_addr = server.start()
+  logging.info("reservation object is created, check if executors are being allocated")
 
   # start TF nodes on all executors
   logging.info("Starting TensorFlow on executors")
