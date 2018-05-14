@@ -76,6 +76,7 @@ def get_gpus(num_gpu=1):
   free_gpus = []
   retries = 0
   while len(free_gpus) < num_gpu and retries < MAX_RETRIES:
+    # --query-compute-apps - List of currently active compute processes
     smi_output = subprocess.check_output(["nvidia-smi", "--format=csv,noheader,nounits", "--query-compute-apps=gpu_uuid"]).decode()
     print("smi output")
     print(smi_output)
