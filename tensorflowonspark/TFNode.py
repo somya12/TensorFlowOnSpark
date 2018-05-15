@@ -63,11 +63,14 @@ def start_cluster_server(ctx, num_gpus=1, rdma=False):
   Returns:
     A tuple of (cluster_spec, server)
   """
+  print("inside start_cluster_server function in TFNode.py")
   import tensorflow as tf
   from . import gpu_info
 
   logging.info("{0}: ======== {1}:{2} ========".format(ctx.worker_num, ctx.job_name, ctx.task_index))
   cluster_spec = ctx.cluster_spec
+  print("ctx details from TFNode.py")
+  print(ctx.__dict__)
   logging.info("{0}: Cluster spec: {1}".format(ctx.worker_num, cluster_spec))
 
   if tf.test.is_built_with_cuda():
@@ -83,21 +86,26 @@ def start_cluster_server(ctx, num_gpus=1, rdma=False):
         # Find a free gpu(s) to use
         gpus_to_use = gpu_info.get_gpus(num_gpus)
         gpu_prompt = "GPU" if num_gpus == 1 else "GPUs"
+        print("GPUs to use")
+        print(gpus_to_use)
         logging.info("{0}: Using {1}: {2}".format(ctx.worker_num, gpu_prompt, gpus_to_use))
 
         # Set GPU device to use for TensorFlow
         os.environ['CUDA_VISIBLE_DEVICES'] = gpus_to_use
 
         # Create a cluster from the parameter server and worker hosts.
+        print("cluster spec: ")
+        print(cluster_spec)
         cluster = tf.train.ClusterSpec(cluster_spec)
 
         # Create and start a server for the local task.
         if rdma:
-          server = tf.train.Server(cluster, ctx.job_name, ctx.task_index, protocol="grpc+verbs")
+          server = tf.train.Server(cluster, ctx.job_name, ctx.task_index, protocol="grpc_rdma")
         else:
           server = tf.train.Server(cluster, ctx.job_name, ctx.task_index)
         gpu_initialized = True
       except Exception as e:
+        print("inside exception")
         print(e)
         logging.error("{0}: Failed to allocate GPU, trying again...".format(ctx.worker_num))
         retries -= 1

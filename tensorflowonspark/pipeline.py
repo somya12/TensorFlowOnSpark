@@ -375,7 +375,7 @@ class TFEstimator(Estimator, TFParams, HasInputMapping,
       A TFModel representing the trained model, backed on disk by a TensorFlow checkpoint or saved_model.
     """
     sc = SparkContext.getOrCreate()
-
+    print("inside fir method in pipeline.py")
     logging.info("===== 1. train args: {0}".format(self.args))
     logging.info("===== 2. train params: {0}".format(self._paramMap))
     local_args = self.merge_args_params()
