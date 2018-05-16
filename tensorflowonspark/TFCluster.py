@@ -17,6 +17,10 @@ There are three main phases of operation:
 
 """
 
+
+"""
+value of ctx - {'executor_id': 2, 'cluster_spec': {'ps': ['10.0.0.223:46159'], 'worker': ['10.0.0.96:40251', '10.0.0.78:33149']}, 'worker_num': 2, 'task_index': 1, 'job_name': 'worker', 'working_dir': '/media/ebs2/yarn/local/usercache/root/appcache/application_1526366110374_0004/container_1526366110374_0004_01_000001', 'mgr': <tensorflowonspark.TFManager.TFManager object at 0x7fdd773c6710>, 'defaultFS': 'hdfs://10.0.0.219:9000'}
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import nested_scopes

@@ -349,9 +349,12 @@ def run(fn, tf_args, cluster_meta, tensorboard, log_dir, queues, background):
           queue.task_done()
     else:
       # otherwise, just run TF function in the main executor/worker thread
-      logging.info("Starting TensorFlow {0}:{1} on cluster node {2} on foreground thread".format(job_name, task_index, executor_id))
-      wrapper_fn(tf_args, ctx)
-      logging.info("Finished TensorFlow {0}:{1} on cluster node {2}".format(job_name, task_index, executor_id))
+      try:
+        logging.info("Starting TensorFlow {0}:{1} on cluster node {2} on foreground thread".format(job_name, task_index, executor_id))
+        wrapper_fn(tf_args, ctx)
+        logging.info("Finished TensorFlow {0}:{1} on cluster node {2}".format(job_name, task_index, executor_id))
+      except Exception as e:
+        raise Exception("The map function specified failed with the error")
 
   return _mapfn
 

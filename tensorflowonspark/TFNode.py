@@ -96,8 +96,45 @@ def start_cluster_server(ctx, num_gpus=1, rdma=False):
         # Create a cluster from the parameter server and worker hosts.
         print("cluster spec: ")
         print(cluster_spec)
+        # {'ps': ['10.0.0.223:46159'], 'worker': ['10.0.0.96:40251', '10.0.0.78:33149']}
         cluster = tf.train.ClusterSpec(cluster_spec)
+        """
+        num_epochs: 1
+        files: ['hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00000', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00001', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00002', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00003', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00004', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00005', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00006', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00007', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00008', 'hdfs://10.0.0.219:9000/qfs/deep-learning/examples/tfos/mnist_data/tfr/train/part-r-00009']
+        image: Tensor("div:0", shape=(784,), dtype=float32, device=/job:worker/task:1)
+        label: Tensor("ToFloat_1:0", shape=(10,), dtype=float32, device=/job:worker/task:1)
+        """
 
+        """
+        supervisor will have all the entire graph as a dict
+        """
+
+        """
+        server value -
+        
+        {'_server': <tensorflow.python.pywrap_tensorflow_internal.ServerInterface; proxy of <Swig Object of type 'tensorflow::ServerInterface *' at 0x7fdd0ced2ae0> >, '_server_def': cluster {
+        job {
+          name: "ps"
+          tasks {
+            value: "10.0.0.223:46159"
+          }
+        }
+        job {
+          name: "worker"
+          tasks {
+            value: "10.0.0.96:40251"
+          }
+          tasks {
+            key: 1
+            value: "10.0.0.78:33149"
+          }
+        }
+        }
+        job_name: "worker"
+        task_index: 1
+        protocol: "grpc"
+        }
+        """
         # Create and start a server for the local task.
         if rdma:
           server = tf.train.Server(cluster, ctx.job_name, ctx.task_index, protocol="grpc_rdma")
